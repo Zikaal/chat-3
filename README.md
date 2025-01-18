@@ -88,6 +88,11 @@ This project is an AI-powered assistant designed to answer questions related to 
 2. [LangChain Documentation](https://python.langchain.com)
 3. [Streamlit Documentation](https://docs.streamlit.io)
 
+## Authors
+Alisher Samat
+Alexandr Chshudro
+Zinetov Alikhan
+
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
