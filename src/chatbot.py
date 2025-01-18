@@ -99,7 +99,7 @@ def get_constitution_text():
     else:
         return "Error fetching the Constitution text from the website."
 
-st.title("Chat with Ollama and Constitution of Kazakhstan")
+st.title("Chat with Ollama ")
 
 model = "llama3.2:1b"
 menu = st.sidebar.selectbox("Choose an action", ["Show Documents in MongoDB", "Add New Document to MongoDB as Vector", "Upload File and Ask Question", "Ask Ollama a Question", "Ask Question About Constitution"])
