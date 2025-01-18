@@ -24,8 +24,8 @@ This project is an AI-powered assistant designed to answer questions related to 
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   git clone https://github.com/Zikaal/chat-3.git
+   cd chat-3
    ```
 
 2. Install dependencies:
@@ -38,7 +38,7 @@ This project is an AI-powered assistant designed to answer questions related to 
 
 4. Run the application:
    ```bash
-   streamlit run <script_name>.py
+   streamlit run chatbot.py
    ```
 
 ## Usage
@@ -74,9 +74,9 @@ This project is an AI-powered assistant designed to answer questions related to 
 ```
 .
 ├── src/
-│   ├── main.py          # Main application script
+│   ├── chatbot.py          # Main application script
 ├── test/                # Tests for functionality
-|   ├── main.py          
+|   ├── chatbot.py          
 ├── requirements.txt     # Python dependencies
 ├── README.md            # Project documentation
 └── LICENSE              # License information
