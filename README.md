@@ -89,9 +89,9 @@ This project is an AI-powered assistant designed to answer questions related to 
 3. [Streamlit Documentation](https://docs.streamlit.io)
 
 ## Authors
-Alisher Samat
-Alexandr Chshudro
-Zinetov Alikhan
+- Alisher Samat
+- Alexandr Chshudro
+- Zinetov Alikhan
 
 ## License
 
