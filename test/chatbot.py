@@ -4,7 +4,6 @@ from langchain_ollama import OllamaLLM
 from sentence_transformers import SentenceTransformer
 from pymongo import MongoClient
 import numpy as np
-import os
 import chardet
 import requests
 from bs4 import BeautifulSoup
@@ -12,7 +11,7 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO)
 
 # Подключение к базе данных MongoDB
-mongo_client = MongoClient("mongodb://localhost:27017/")  
+mongo_client = MongoClient("mongodb://localhost:27017/")
 mongo_db = mongo_client["rag_db"]
 collection = mongo_db["documents"]
 
@@ -36,7 +35,7 @@ def add_document_to_mongodb(documents, ids):
             if not doc.strip():
                 raise ValueError("Cannot add an empty or whitespace-only document.")
 
-            embedding_vector = embedding(doc)  
+            embedding_vector = embedding(doc)
             logging.info(f"Generated embedding for document '{doc}': {embedding_vector}")
 
             collection.insert_one({
@@ -47,7 +46,6 @@ def add_document_to_mongodb(documents, ids):
     except Exception as e:
         logging.error(f"Error adding document: {e}")
         raise
-
 def query_documents_from_mongodb(query_text, n_results=1):
     try:
         query_embedding = embedding(query_text)[0]
@@ -77,7 +75,6 @@ def query_with_ollama(prompt, model_name):
     except Exception as e:
         logging.error(f"Error with Ollama query: {e}")
         return f"Error with Ollama API: {e}"
-
 def retrieve_and_answer(query_text, model_name):
     retrieved_docs = query_documents_from_mongodb(query_text)
     context = " ".join(retrieved_docs) if retrieved_docs else "No relevant documents found."
@@ -85,21 +82,24 @@ def retrieve_and_answer(query_text, model_name):
     augmented_prompt = f"Context: {context}\n\nQuestion: {query_text}\nAnswer:"
     return query_with_ollama(augmented_prompt, model_name)
 
+
 # Функция для извлечения текста с сайта Конституции Республики Казахстан
 def get_constitution_text():
     url = "https://www.akorda.kz/en/constitution-of-the-republic-of-kazakhstan-50912"
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        # Пытаемся найти текст Конституции на странице
         constitution_text = ""
         for paragraph in soup.find_all("p"):
             constitution_text += paragraph.get_text() + "\n"
+        logging.info(f"Extracted Constitution text: {constitution_text[:500]}...")  # Покажем первые 500 символов
         return constitution_text
+       
     else:
+        logging.error("Error fetching the Constitution text from the website.")
         return "Error fetching the Constitution text from the website."
 
-st.title("Chat with Ollama ")
+st.title("Chat with Ollama")
 
 model = "llama3.2:1b"
 menu = st.sidebar.selectbox("Choose an action", ["Show Documents in MongoDB", "Add New Document to MongoDB as Vector", "Upload File and Ask Question", "Ask Ollama a Question", "Ask Question About Constitution"])
@@ -173,14 +173,34 @@ elif menu == "Ask Ollama a Question":
         response = retrieve_and_answer(query, model)
         st.write("Response:", response)
 
-elif menu == "Ask Question About Constitution":
+
+
+if menu == "Ask Question About Constitution":
     question = st.text_input("Ask a question about the Constitution of Kazakhstan")
     if question:
-        # Извлекаем текст Конституции с сайта
-        constitution_text = get_constitution_text()
-        if constitution_text:
-            # Используем текст Конституции как контекст для запроса
-            response = query_with_ollama(f"Context: {constitution_text}\n\nQuestion: {question}\nAnswer:", model)
-            st.write("Response:", response)
-        else:
-            st.write("Failed to fetch Constitution text.")
+        try:
+            # Извлекаем текст с сайта Конституции
+            constitution_text = get_constitution_text()
+            if constitution_text:
+                # Ограничиваем объем текста для передачи в модель (например, первые 2000 символов)
+                context = constitution_text[:2000]  # Ограничение на первые 2000 символов
+                logging.info(f"Constitution text: {context[:500]}...")  # Отладочный вывод
+
+                # Формируем запрос к Ollama
+                augmented_prompt = f"Context: {context}\n\nQuestion: {question}\nAnswer:"
+                response = query_with_ollama(augmented_prompt, model)
+
+                # Выводим ответ от Ollama и краткий текст Конституции
+                st.write("Constitution Text (Extract):")
+                st.text_area("Constitution Text", context, height=200)
+                st.write("Response from Ollama:", response)
+
+                # Генерация краткого текста
+                summary_prompt = f"Summarize the following content: {context}"
+                summary = query_with_ollama(summary_prompt, model)
+                st.write("Summary of the Constitution Text:", summary)
+            else:
+                st.write("Failed to fetch Constitution text.")
+        except Exception as e:
+            logging.error(f"Error occurred: {e}")
+            st.write("An error occurred while processing the request.")
